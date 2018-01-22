@@ -64,6 +64,11 @@ var syncCmd = &cobra.Command{
 							bar := pb.New(0)
 							bar.Units = pb.U_BYTES_DEC
 							dest := path.Join(dir, c.Title+" - "+a.Title+"."+a.Ext)
+							if _, err := os.Stat(dest); err == nil {
+								fmt.Println("already exists. skip.")
+								continue
+							}
+
 							err = api.DownloadFile(a.Url, dest, bar)
 							if err != nil {
 								return err
