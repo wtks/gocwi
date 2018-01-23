@@ -21,7 +21,7 @@ func Login(id, pass string, matrixSolver func([3][]string) (rune, rune, rune)) e
 	}
 	b, _ := ioutil.ReadAll(res.Body)
 	res.Body.Close()
-	values, err := GetHiddenFormValues(string(b))
+	values, err := getHiddenFormValues(string(b))
 	if err != nil {
 		return err
 	}
@@ -49,11 +49,11 @@ func Login(id, pass string, matrixSolver func([3][]string) (rune, rune, rune)) e
 		return errors.New("something is wrong")
 	}
 
-	values, err = GetHiddenFormValues(string(b))
+	values, err = getHiddenFormValues(string(b))
 	if err != nil {
 		return err
 	}
-	matrix, err := GetMatrixPositions(string(b))
+	matrix, err := getMatrixPositions(string(b))
 	if err != nil {
 		return err
 	}

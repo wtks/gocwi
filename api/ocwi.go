@@ -18,6 +18,7 @@ const (
 
 var (
 	lecturerRegExp      = regexp.MustCompile(`\(.+?\)`)
+	lectureIdRegExp     = regexp.MustCompile(`&JWC=(\d+?)$`)
 	attachmentRegExp    = regexp.MustCompile(`(.+?)（(\d+?KB)）(.+?) (\d{4})\.(\d{2})\.(\d{2})`)
 	attachmentExtRegExp = regexp.MustCompile(`.+?&file=.+?\.(.+?)&JWC=.+?`)
 )
@@ -46,6 +47,7 @@ type Subject struct {
 type LectureNoteResult struct {
 	SubjectName   string
 	SubjectNameEn string
+	Id            int
 	Classes       []Class
 }
 
@@ -204,6 +206,7 @@ func parseLectureNoteHtml(reader io.Reader) (*LectureNoteResult, error) {
 	h1 := doc.Find("#lectureTtl > h1")
 	result.SubjectNameEn = h1.Find("div").Text()
 	result.SubjectName = strings.TrimSuffix(h1.Text(), result.SubjectNameEn)
+	result.Id, _ = strconv.Atoi(lectureIdRegExp.FindStringSubmatch(doc.Find("#lnaviExercise > a").AttrOr("href", ""))[1])
 
 	notes := doc.Find("#mainarea > div.contents > div.lectureNote")
 	notes.Each(func(_ int, note *goquery.Selection) {

@@ -38,7 +38,7 @@ var (
 
 func getAccountId() string {
 	for len(accountId) == 0 {
-		fmt.Print("your account> ")
+		fmt.Print("input your account: ")
 		fmt.Scanf("%s", &accountId)
 	}
 
@@ -47,7 +47,7 @@ func getAccountId() string {
 
 func getPassword() string {
 	for len(password) == 0 {
-		fmt.Print("your password> ")
+		fmt.Print("input your password: ")
 		b, err := terminal.ReadPassword(int(syscall.Stdin))
 		if err != nil {
 			fmt.Scanf("%s", &password)
@@ -66,11 +66,11 @@ func getMatrixRunes(matrix [3][]string) (m1 rune, m2 rune, m3 rune) {
 		m2 = rune(mSeq[int(([]rune(matrix[1][0])[0]-'A')*7+[]rune(matrix[1][1])[0]-'1')])
 		m3 = rune(mSeq[int(([]rune(matrix[2][0])[0]-'A')*7+[]rune(matrix[2][1])[0]-'1')])
 	} else {
-		fmt.Printf("Matrix %s%s>", matrix[0][0], matrix[0][1])
+		fmt.Printf("Matrix %s%s> ", matrix[0][0], matrix[0][1])
 		fmt.Scanf("%c\n", &m1)
-		fmt.Printf("Matrix %s%s>", matrix[1][0], matrix[1][1])
+		fmt.Printf("Matrix %s%s> ", matrix[1][0], matrix[1][1])
 		fmt.Scanf("%c\n", &m2)
-		fmt.Printf("Matrix %s%s>", matrix[2][0], matrix[2][1])
+		fmt.Printf("Matrix %s%s> ", matrix[2][0], matrix[2][1])
 		fmt.Scanf("%c\n", &m3)
 	}
 	return

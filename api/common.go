@@ -23,7 +23,7 @@ func init() {
 	client = &http.Client{Jar: jar}
 }
 
-func GetHiddenFormValues(html string) (url.Values, error) {
+func getHiddenFormValues(html string) (url.Values, error) {
 	result := url.Values{}
 
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
@@ -40,7 +40,7 @@ func GetHiddenFormValues(html string) (url.Values, error) {
 	return result, nil
 }
 
-func GetMatrixPositions(html string) ([3][]string, error) {
+func getMatrixPositions(html string) ([3][]string, error) {
 	result := [3][]string{}
 
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
