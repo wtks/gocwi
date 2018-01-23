@@ -1,17 +1,20 @@
 # gocwi
-**IMPORTANT** THIS SOFTWARE IS UNOFFICIAL. USE IT AT YOUR OWN RISK. THE AUTHOR HAS NO RESPONSIBILITY FOR ANY DAMAGE AND PROBLEMS YOU TAKE DUE TO USING IT.
+[![Build Status](https://travis-ci.org/wtks/gocwi.svg?branch=master)](https://travis-ci.org/wtks/gocwi)
 
-gocwi is a cui tool for OCWi.
+**重要**
+このソフトウェアは非公式のものです。自己責任で使ってください。作者はこのソフトウェアを使ったことにより生じた損害や問題に対して一切の責任を負いません。 
 
-## Installation
-requires go 1.9.x
+gocwiはOCWiのためのターミナルツールです。
+
+## インストール
+go 1.9.x が必要です
+
 ```bash
 go get github.com/wtks/gocwi
 ```
-then you are ready for using gocwi.
 
-## Usage
-see `gocwi help`.
+## 使い方
+`gocwi help`を参照してください(英語)
 
-## License
+## ライセンス
 MIT
