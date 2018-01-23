@@ -11,8 +11,9 @@ import (
 )
 
 var RootCmd = &cobra.Command{
-	Use:   "gocwi [command]",
-	Short: "gocwi is a cui tool for OCWi",
+	Use:     "gocwi [command]",
+	Short:   "gocwi is a cui tool for OCWi",
+	Version: "0.1.0",
 }
 
 var testCmd = &cobra.Command{
@@ -88,8 +89,8 @@ func init() {
 	RootCmd.AddCommand(syncCmd)
 	RootCmd.PersistentFlags().StringVarP(&accountId, "account", "a", "", "your account id")
 	RootCmd.PersistentFlags().StringVarP(&password, "password", "p", "", "**NOT RECOMMENDED** your password")
-	RootCmd.PersistentFlags().StringVarP(&destDir, "dest", "d", home, "downloaded files destination (default: '~/gocwi')")
-	RootCmd.PersistentFlags().StringVarP(&mSeq, "matrix", "m", "", "**NOT RECOMMENDED** your matrix character's sequence (A1-A7B1-B7...)")
+	RootCmd.PersistentFlags().StringVarP(&destDir, "dest", "d", home, "downloaded files destination")
+	RootCmd.PersistentFlags().StringVarP(&mSeq, "matrix", "m", "", "**NOT RECOMMENDED** your matrix character's sequence (A1-A7B1-B7...). it must be 70 characters.")
 }
 
 func Execute() {

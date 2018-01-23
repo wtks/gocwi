@@ -5,6 +5,7 @@ go:
 
 before_deploy:
   - go get -u github.com/laher/goxc
+  - go get github.com/inconshreveable/mousetrap
   - mkdir -p $TRAVIS_BUILD_DIR/dist
   - goxc -d=$TRAVIS_BUILD_DIR/dist -os="linux darwin windows" -arch="386 amd64" -tasks=clean-destination,xc,archive,rmbin
 

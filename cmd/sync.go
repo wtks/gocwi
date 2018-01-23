@@ -75,7 +75,7 @@ var syncCmd = &cobra.Command{
 								dups[a.Title+"."+a.Ext] = 2
 								name = a.Title + "." + a.Ext
 							}
-							dest := path.Join(dir, strings.Map(convertInValidRune, c.Title+" - "+name))
+							dest := path.Join(dir, strings.Map(convertToValidRune, c.Title+" - "+name))
 							if exists(dest) {
 								fmt.Println("the file already exists. skip.")
 								continue
@@ -117,7 +117,7 @@ func exists(path string) bool {
 	return err == nil
 }
 
-func convertInValidRune(rune rune) rune {
+func convertToValidRune(rune rune) rune {
 	if runtime.GOOS == "windows" {
 		switch rune {
 		case '\\':
