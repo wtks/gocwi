@@ -7,11 +7,18 @@
 gocwiはOCWiのためのターミナルツールです。
 
 ## インストール
-go 1.9.x が必要です
 
-```bash
-go get github.com/wtks/gocwi
-```
+1. \[推奨\] go get
+
+    go 1.9.x が必要です。
+
+    ```bash
+    go get github.com/wtks/gocwi
+    ```
+
+2. バイナリダウンロード
+
+    [github releases](https://github.com/wtks/gocwi/releases)からお使いの環境にあったバイナリファイルをダウンロードしてください。
 
 ## 使い方
 `gocwi help`を参照してください(英語)
