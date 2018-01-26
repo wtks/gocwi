@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -21,6 +22,7 @@ var (
 	lectureIdRegExp     = regexp.MustCompile(`&JWC=(\d+?)$`)
 	attachmentRegExp    = regexp.MustCompile(`(.+?)（(\d+?KB)）(.+?) (\d{4})\.(\d{2})\.(\d{2})`)
 	attachmentExtRegExp = regexp.MustCompile(`.+?&file=.+?\.(.+?)&JWC=.+?`)
+	kadaiIdRegExp       = regexp.MustCompile(`&kadaiid=(\d+?)`)
 )
 
 type SubjectListResult struct {
@@ -71,6 +73,18 @@ type Attachment struct {
 	Year  int
 	Month int
 	Day   int
+}
+
+type Task struct {
+	Status       string
+	Deadline     time.Time
+	SubmitTime   *time.Time
+	SubjectName  string
+	SubjectId    int
+	Title        string
+	Id           int
+	Lecturers    []string
+	OpenDateTime time.Time
 }
 
 func LoginOcwi() error {
@@ -253,6 +267,72 @@ func parseLectureNoteHtml(reader io.Reader) (*LectureNoteResult, error) {
 		})
 
 		result.Classes = append(result.Classes, class)
+	})
+
+	return result, nil
+}
+
+func GetTaskList() ([]Task, error) {
+	values := url.Values{}
+	values.Add("module", "Ocwi")
+	values.Add("action", "Subject")
+
+	res, err := client.Get(urlOcwiRoot + "?" + values.Encode())
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	return parseTaskList(res.Body)
+}
+
+func parseTaskList(reader io.Reader) ([]Task, error) {
+	doc, err := goquery.NewDocumentFromReader(reader)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []Task
+
+	doc.Find("div#container > div.contents > table > tr").Has("td").Each(func(_ int, t *goquery.Selection) {
+		task := Task{}
+		t.Find("td").Each(func(i int, s *goquery.Selection) {
+			switch i {
+			case 0: //提出状況
+				task.Status = s.Find("a > img").AttrOr("alt", "不明")
+			case 1: //締め切り
+				task.Deadline, _ = time.Parse("2006/01/02 15:04", strings.Replace(s.Text(), "\n", " ", -1))
+			case 2: //提出日
+				submit := s.Text()
+				if len(submit) > 0 {
+					sTime, err := time.Parse("2006/01/02 15:04", strings.Replace(s.Text(), "\n", " ", -1))
+					if err == nil {
+						task.SubmitTime = &sTime
+					} else {
+						task.SubmitTime = nil
+					}
+				} else {
+					task.SubmitTime = nil
+				}
+			case 3: //講義名
+				a := s.Find("a")
+				task.SubjectId, _ = strconv.Atoi(lectureIdRegExp.FindStringSubmatch(a.AttrOr("href", ""))[1])
+				task.SubjectName = a.Text()
+			case 4: //課題名
+				a := s.Find("a")
+				task.Title = a.Text()
+				task.Id, _ = strconv.Atoi(kadaiIdRegExp.FindStringSubmatch(a.AttrOr("href", ""))[1])
+			case 5: //教員名
+				teachers := lecturerRegExp.FindAllString(s.Text(), -1)
+				for i := range teachers {
+					teachers[i] = strings.Trim(teachers[i], "()")
+				}
+				task.Lecturers = teachers
+			case 6: //公開日
+				task.OpenDateTime, _ = time.Parse("2006/01/02 15:04", strings.Replace(s.Text(), "\n", " ", -1))
+			}
+		})
+		result = append(result, task)
 	})
 
 	return result, nil
