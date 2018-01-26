@@ -87,6 +87,27 @@ type Task struct {
 	OpenDateTime time.Time
 }
 
+type TaskDetail struct {
+	Status      string
+	Closed      bool
+	Title       string
+	Deadline    string
+	JWC         string
+	KadaiId     string
+	Count       string
+	Comment     string
+	MaxFileSize int
+	Files       []TaskFile
+}
+
+type TaskFile struct {
+	Value          string
+	FileName       string
+	Url            string
+	Status         string
+	SubmitDateTime string
+}
+
 func LoginOcwi() error {
 	req, err := http.NewRequest("GET", urlOcwiRoot, nil)
 	if err != nil {
@@ -283,10 +304,10 @@ func GetTaskList() ([]Task, error) {
 	}
 	defer res.Body.Close()
 
-	return parseTaskList(res.Body)
+	return parseTaskListHtml(res.Body)
 }
 
-func parseTaskList(reader io.Reader) ([]Task, error) {
+func parseTaskListHtml(reader io.Reader) ([]Task, error) {
 	doc, err := goquery.NewDocumentFromReader(reader)
 	if err != nil {
 		return nil, err
@@ -334,6 +355,88 @@ func parseTaskList(reader io.Reader) ([]Task, error) {
 		})
 		result = append(result, task)
 	})
+
+	return result, nil
+}
+
+func GetTaskDetail(subjectId, taskId int) (*TaskDetail, error) {
+	values := url.Values{}
+	values.Add("module", "Ocwi")
+	values.Add("action", "SubjectHandIn")
+	values.Add("JWC", strconv.Itoa(subjectId))
+	values.Add("kadaiid", strconv.Itoa(taskId))
+
+	res, err := client.Get(urlOcwiRoot + "?" + values.Encode())
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	return parseTaskDetailHtml(res.Body)
+}
+
+func parseTaskDetailHtml(reader io.Reader) (*TaskDetail, error) {
+	doc, err := goquery.NewDocumentFromReader(reader)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &TaskDetail{
+		Closed: false,
+	}
+
+	content := doc.Find("div#mainarea > div.contents")
+
+	title := content.Find("h2")
+	if title.Size() == 0 {
+		return nil, errors.New("the task is not found")
+	}
+	result.Title = title.Text()
+
+	content.Find("div.property > dl").Each(func(_ int, s *goquery.Selection) {
+		if s.HasClass("close") {
+			result.Deadline = strings.TrimSpace(s.Find("dd").Text())
+		} else if s.HasClass("status") {
+			result.Status = s.Find("dd > a > img").AttrOr("alt", "不明")
+		}
+		if s.HasClass("closed") {
+			result.Closed = true
+		}
+	})
+
+	if result.Closed {
+		return result, nil
+	} else {
+		form := content.Find("form")
+		result.JWC = form.Find(`input[name="JWC"]`).AttrOr("201702431", "")
+		result.KadaiId = form.Find(`input[name="kadaiid"]`).AttrOr("value", "")
+
+		present := form.Find("div.present")
+
+		present.Find("table > tr").Has("td").Each(func(_ int, tr *goquery.Selection) {
+			file := TaskFile{}
+			tr.Find("td").Each(func(i int, td *goquery.Selection) {
+				switch i {
+				case 0: //checkbox
+					file.Value = td.Find("input").AttrOr("value", "")
+				case 1: //filetitle
+					file.Url = td.Find("ul > li > a").AttrOr("href", "")
+				case 2: //filename
+					file.FileName = td.Text()
+				case 3: //status
+					file.Status = td.Find("img").AttrOr("alt", "不明")
+				case 4: //submit datetime
+					file.SubmitDateTime = strings.TrimSpace(td.Text())
+				}
+			})
+		})
+
+		if i := present.Find(`input[name="count"]`); i.Size() > 0 {
+			result.Count = i.AttrOr("value", "")
+		}
+		result.MaxFileSize, _ = strconv.Atoi(present.Find(`ul.line.clearfix > input[name="MAX_FILE_SIZE"]`).AttrOr("value", ""))
+		result.Comment = present.Find(`textarea[name="comment"]`).Text()
+	}
 
 	return result, nil
 }
