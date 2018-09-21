@@ -37,15 +37,24 @@ var listCmd = &cobra.Command{
 			table := tablewriter.NewWriter(os.Stdout)
 			table.SetHeader([]string{"ID", "Name", "Lecturer", "Period", "Room", "Open Tasks"})
 			table.SetAutoMergeCells(true)
-			for _, l := range q.Subjects {
+			table.SetRowLine(true)
+			for n, l := range q.Subjects {
+				taskcount := strconv.Itoa(l.OpenTaskCount)
+				if n%2 == 0 {
+					taskcount = " " + taskcount
+				}
 				for i := range l.Periods {
+					room := l.Rooms[i]
+					if n%2 == 0 {
+						room = " " + room
+					}
 					table.Append([]string{
 						strconv.Itoa(l.Id),
 						l.Name,
 						strings.Join(l.Lecturers, ", "),
 						l.Periods[i],
-						l.Rooms[i],
-						strconv.Itoa(l.OpenTaskCount),
+						room,
+						taskcount,
 					})
 				}
 			}

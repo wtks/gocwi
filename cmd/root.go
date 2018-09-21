@@ -35,6 +35,7 @@ var (
 	password  string
 	destDir   string
 	mSeq      string
+	verbose   bool
 )
 
 func getAccountId() string {
@@ -91,6 +92,7 @@ func init() {
 	RootCmd.PersistentFlags().StringVarP(&password, "password", "p", "", "**NOT RECOMMENDED** your password")
 	RootCmd.PersistentFlags().StringVarP(&destDir, "dest", "d", home, "downloaded files destination")
 	RootCmd.PersistentFlags().StringVarP(&mSeq, "matrix", "m", "", "**NOT RECOMMENDED** your matrix character's sequence (A1-A7B1-B7...). it must be 70 characters.")
+	RootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "be verbose")
 }
 
 func Execute() {

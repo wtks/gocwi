@@ -1,14 +1,11 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/wtks/gocwi/api"
 	"gopkg.in/cheggaaa/pb.v1"
-	"os"
 	"path"
-	"runtime"
 	"strconv"
 	"strings"
 )
@@ -56,7 +53,8 @@ var syncCmd = &cobra.Command{
 
 				for _, c := range notes.Classes {
 					if len(c.Attachments) > 0 {
-						fmt.Printf("#%s\n", c.Title)
+						header := fmt.Sprintf("# %s\n", c.Title)
+						headerWritten := false
 						dir := path.Join(destDir, s.Name)
 						if err := makeDirsIfNotExist(dir); err != nil {
 							return err
@@ -64,7 +62,6 @@ var syncCmd = &cobra.Command{
 
 						dups := map[string]int{}
 						for _, a := range c.Attachments {
-							fmt.Printf(" + %s(%s) - %4d/%2d/%2d\n", a.Title, a.Type, a.Year, a.Month, a.Day)
 							bar := pb.New(0)
 							bar.Units = pb.U_BYTES_DEC
 							name := ""
@@ -77,15 +74,30 @@ var syncCmd = &cobra.Command{
 							}
 							dest := path.Join(dir, strings.Map(convertToValidRune, c.Title+" - "+name))
 							if exists(dest) {
-								fmt.Println("the file already exists. skip.")
+								if verbose {
+									if !headerWritten {
+										fmt.Print(header)
+										headerWritten = true
+									}
+									fmt.Printf(" + %s(%s) - %4d/%2d/%2d\n", a.Title, a.Type, a.Year, a.Month, a.Day)
+									fmt.Println("the file already exists. skip.")
+								}
 								continue
+							} else {
+								if !headerWritten {
+									fmt.Print(header)
+									headerWritten = true
+								}
+								fmt.Printf(" + %s(%s) - %4d/%2d/%2d\n", a.Title, a.Type, a.Year, a.Month, a.Day)
 							}
 
 							if err := api.DownloadFile(a.Url, dest, bar); err != nil {
 								return err
 							}
 						}
-						fmt.Println()
+						if headerWritten {
+							fmt.Println()
+						}
 					}
 				}
 			}
@@ -98,54 +110,4 @@ var syncCmd = &cobra.Command{
 	PostRunE: func(cmd *cobra.Command, args []string) error {
 		return api.LogoutOcwi()
 	},
-}
-
-func makeDirsIfNotExist(path string) error {
-	if info, err := os.Stat(path); err != nil && os.IsNotExist(err) {
-		if err := os.MkdirAll(path, 0777); err != nil {
-			return err
-		}
-	} else if !info.IsDir() {
-		return errors.New("the destination is not directory")
-	}
-
-	return nil
-}
-
-func exists(path string) bool {
-	_, err := os.Stat(path)
-	return err == nil
-}
-
-func convertToValidRune(rune rune) rune {
-	if runtime.GOOS == "windows" {
-		switch rune {
-		case '\\':
-			return '￥'
-		case '/':
-			return '／'
-		case ':':
-			return '：'
-		case '*':
-			return '＊'
-		case '"':
-			return '”'
-		case '?':
-			return '？'
-		case '<':
-			return '＜'
-		case '>':
-			return '＞'
-		case '|':
-			return '｜'
-		default:
-			return rune
-		}
-	} else {
-		if rune == '/' {
-			return '／'
-		} else {
-			return rune
-		}
-	}
 }
