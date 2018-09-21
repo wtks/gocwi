@@ -1,5 +1,6 @@
 /.idea/
 *.iml
+.envrc
 
 ### Go template
 # Binaries for programs and plugins
