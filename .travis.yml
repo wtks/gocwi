@@ -1,25 +1,18 @@
 language: go
-
 go:
-  - "1.11.x"
-
+  - '1.11'
 env:
   - GO111MODULE=on
-
-install:
+before_install:
   - go mod download
-
-before_deploy:
-  - go get -u github.com/laher/goxc
-  - mkdir -p $TRAVIS_BUILD_DIR/dist
-  - goxc -d=$TRAVIS_BUILD_DIR/dist -os="linux darwin windows" -arch="386 amd64" -tasks=clean-destination,xc,archive,rmbin
-
 deploy:
-  provider: releases
-  skip_cleanup: true
-  api_key: $GITHUB_TOKEN
-  file_glob: true
-  file: "$TRAVIS_BUILD_DIR/dist/**/*.{tar.gz,zip}"
-  on:
-    tags: true
-    condition: "$TRAVIS_TAG =~ ^v[0-9].*$"
+  - provider: script
+    skip_cleanup: true
+    script: curl -sL https://git.io/goreleaser | bash
+    on:
+      tags: true
+      condition: "$TRAVIS_OS_NAME = linux"
+notifications:
+  email: false
+  slack:
+    secure: fvPZiZnOoyTRjdie0WoKSWfTggxtYDp/lfcyPggislhyNw2jDeBZnWJ2f8xbuPlPFMZWL2ysz4rXwPAVVW1OFMluoFSgOheNSt0mAaPxAB1xAuqOjUJbalDQh3kHpIHlT4K/P05rBR+Px49z8pdXFkej9cW3hcuGl9MTC6WDKL+FAB37oX4N0Nl8EddlKdwpqhd6EAmUzz/4PqYyGEJmwOm8rhAttwCVBwYcUji2Q7eeVvN6P0uFanqYfcBVpy0ckwRVlufLM2rVbXyGdC7b1GKuO91nlExt2NsAFXtddQnMz8ywuTn7F0HX8HJU0ZcLkKzks/Rwievg1Rt/I2bWQydm5S6aOxirY+fxHp3SRi5IidmFYQtASawmXdZlCCXYI5hcWuaY3opv09saNmUeOpbBmaTo3p//PVdGF3mA2/cNKEh/V7oAMsdnr81dw0LR7witqQVW1EaweM3x3/WMrsRR06GF4AVKhtSg9AO2raIeurwKvYlxelcq6CxI0LKzvXD5XJ+vLBOsP1Xbg7SSl0Y5QMc5ND+WZW7Ofg/XlyWQ89PuiVCrxXFtIfeM4cUmqpqYBHzT54tq2vrX3y65H5H5maG4TNTWLAz5tRXIH0y9yCox4ecrZ1uOpW8SnYTSY1biCBrVa1H4XGLtFev1rD+31CwkfGIy9V3EP8mnKa4=
